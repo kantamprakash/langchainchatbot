@@ -24,8 +24,8 @@ Follow these steps to set up and run the project:
 Clone the project repository from GitHub:
 
 ```bash
-git clone 
-cd your-repo
+git clone https://github.com/kantamprakash/langchainchatbot.git
+cd langchainchatbot
 
 python -m venv venv
 source venv/bin/activate  # On Windows, use: venv\Scripts\activate
