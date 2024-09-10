@@ -5,8 +5,8 @@ from langchain.vectorstores import FAISS
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 import pdfplumber
 
-# Load a conversational model and tokenizer from Hugging Face
-model_name = "microsoft/DialoGPT-small"
+# Load a smaller conversational model and tokenizer from Hugging Face
+model_name = "distilgpt2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
@@ -25,14 +25,14 @@ def extract_text_from_pdf(pdf_path):
     return text
 
 # Read the PDF content
-pdf_path = "annual.pdf"  # Replace with your PDF file path
+pdf_path = "bitcoin.pdf"  # Replace with your PDF file path
 pdf_content = extract_text_from_pdf(pdf_path)
 
 # Split PDF content into chunks for processing
 texts = pdf_content.split('. ')  # Split content into sentences
 
-# Initialize the embeddings model
-embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+# Initialize the embeddings model with a smaller model
+embedding_model = HuggingFaceEmbeddings(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2")
 
 # Create a FAISS vector store using the extracted texts and embeddings
 vector_store = FAISS.from_texts(texts, embedding_model)
