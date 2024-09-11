@@ -1,32 +1,42 @@
+from langchain.document_loaders import PyPDFLoader
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain.chains import RetrievalQA
 from langchain.llms import HuggingFacePipeline
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import pipeline, AutoModelForCausalLM, AutoTokenizer
 
-# Load a conversational model and tokenizer from Hugging Face
-model_name = "microsoft/DialoGPT-small"
+# Load the PDF document
+loader = PyPDFLoader("bitcoin.pdf")
+documents = loader.load()
+
+# Create embeddings for the documents
+embeddings = HuggingFaceEmbeddings()
+
+# Create a vector store for retrieval
+vectorstore = FAISS.from_documents(documents, embeddings)
+
+# Create a retrieval-based QA system
+retriever = vectorstore.as_retriever()
+
+# Load a conversational model (replace with a suitable one)
+model_name = "deepset/roberta-base-squad2"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForCausalLM.from_pretrained(model_name)
-
-# Create a text generation pipeline using the model and tokenizer
-pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, max_length=100)
+hf_pipeline = pipeline("question-answering", model=model, tokenizer=tokenizer)
 
 # Use HuggingFacePipeline from LangChain to integrate the pipeline
-local_llm = HuggingFacePipeline(pipeline=pipeline)
+local_llm = HuggingFacePipeline(pipeline=hf_pipeline)
 
-# Define a prompt template
-prompt_template = PromptTemplate(input_variables=["input"], template="{input}")
-
-# Set up the chain with the prompt template
-chain = LLMChain(llm=local_llm, prompt=prompt_template)
+# Set up the RetrievalQA chain
+qa_chain = RetrievalQA(llm=local_llm, retriever=retriever)
 
 # Chat loop
-print("Chatbot is ready! Type 'exit' to end the conversation.")
+print("QA system is ready! Type 'exit' to end the conversation.")
 while True:
     user_input = input("You: ")
     if user_input.lower() == "exit":
         break
 
-    # Get the chatbot's response
-    response = chain.run(input=user_input)
+    # Get the QA system's response
+    response = qa_chain.run({"query": user_input})
     print(f"Chatbot: {response}")
