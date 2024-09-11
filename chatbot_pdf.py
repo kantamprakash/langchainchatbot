@@ -2,16 +2,16 @@ from langchain_community.llms import HuggingFacePipeline
 from langchain.chains import RetrievalQA
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import FAISS
-from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 import pdfplumber
 
 # Load a smaller conversational model and tokenizer from Hugging Face
-model_name = "distilgpt2"
+model_name = "MBZUAI/LaMini-T5-738M"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)  # Use AutoModelForSeq2SeqLM for T5 models
 
 # Create a text generation pipeline using the model and tokenizer
-hf_pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer, max_new_tokens=50)
+hf_pipeline = pipeline("text2text-generation", model=model, tokenizer=tokenizer, max_new_tokens=50)
 
 # Use HuggingFacePipeline from LangChain Community to integrate the pipeline
 local_llm = HuggingFacePipeline(pipeline=hf_pipeline)
